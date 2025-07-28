@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Air Quality Info - Clean Dark Design</title>
+
+  <style>   
+    .scrolling-container {
+      width: 100%;
+      height: 60px;
+      overflow: hidden;
+      background:black;
+      padding: 80px 0; /* More vertical space */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .scrolling-track {
+      display: flex;
+      gap: 30px; /* closer gap between blocks */
+      animation: moveTrack 50s linear infinite; /* slightly faster */
+      align-items: center;
+    }
+
+    .info-block {
+      min-width: 100px; /* narrower */
+      min-height: 40px; 
+      background: #222;
+      border-radius: 39px;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.4s;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .info-block h3 {
+      margin-bottom: 18px;
+      font-size: 1.5rem;
+      color: #00c6ff;
+    }
+
+    .info-block p {
+      font-size: 1rem;
+      color: #ccc;
+      line-height: 1.5;
+    }
+
+    .info-block:hover {
+      background: #2a2a2a;
+    }
+
+    @keyframes moveTrack {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @media (max-width: 700px) {
+      .info-block {
+        min-width: 100px;
+        min-height: 250px;
+        padding: 20px 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="scrolling-container">
+    <div class="scrolling-track" id="scrolling-track">
+      <div class="info-block">
+        <h3>CO₂ (ppm)</h3>
+        <p>Carbon dioxide concentration measured in parts per million.<br>
+             High CO₂ indicates poor air quality and can cause discomfort or drowsiness.</p>
+      </div>
+
+      <div class="info-block">
+        <h3>PM2.5 (µg/m³)</h3>
+        <p>Fine particulate matter smaller than 2.5 micrometers.<br> Exposure can lead
+             to health problems such as respiratory and cardiovascular issues.</p>
+      </div>
+
+      <div class="info-block">
+        <h3>Humidity (%)</h3>
+        <p>The percentage of water vapor present in the air.<br> Impacts comfort levels, 
+            sensor readings, and atmospheric conditions.</p>
+      </div>
+
+      <div class="info-block">
+        <h3>Precipitation (mm)</h3>
+        <p>The amount of rainfall or snowfall measured in millimeters. <br>
+            Affects air cleansing, atmospheric pressure, and pollutant dispersion.</p>
+      </div>
+
+      <div class="info-block">
+        <h3>Wind (m/s)</h3>
+        <p>The speed of wind movement across an area. Strong winds can <br>
+            disperse pollutants and impact temperature regulation.</p>
+      </div>
+
+      <div class="info-block">
+        <h3>Velocity of Air Speed (m/s)</h3>
+        <p>The rate of air movement, vital for analyzing <br>
+            ventilation and air quality management in both indoor
+             and outdoor environments.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const track = document.getElementById('scrolling-track');
+    const blocks = document.querySelectorAll('.info-block');
+
+    let paused = false;
+
+    function checkCenter() {
+      if (paused) return;
+
+      const containerRect = document.querySelector('.scrolling-container').getBoundingClientRect();
+
+      blocks.forEach((block) => {
+        const rect = block.getBoundingClientRect();
+        const blockCenter = rect.left + rect.width / 2;
+        const containerCenter = containerRect.left + containerRect.width / 2;
+
+        if (Math.abs(blockCenter - containerCenter) < 20) {
+          paused = false;
+          track.style.animationPlayState = 'paused';
+          block.style.transform = 'scale(1.15)';
+          block.style.boxShadow = '0 12px 32px rgba(0,0,0,0.6)';
+
+          setTimeout(() => {
+            block.style.transform = 'scale(1)';
+            block.style.boxShadow = '0 8px 24px rgba(0,0,0,0.5)';
+            track.style.animationPlayState = 'running';
+            paused = false;
+          }, 2000);
+        }
+      });
+    }
+
+    setInterval(checkCenter, 100);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Air Quality AI Predictor</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.14.0/dist/tf.min.js"></script>
+  <style>
+    .body6 {
+      margin: 0;
+      padding: ;
+      /* background-color: #243750; */
+      font-family: 'Poppins', sans-serif;
+    }
+    .container {
+      max-width: 650px;
+      margin-top: 50px;
+      margin-left: 25%;
+      background:skyblue;
+      padding: 30px;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(26, 60, 81, 0.1);
+      text-align: center;
+    }
+    h1 {
+      color: #222;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 25px;
+    }
+    input[type="number"] {
+      width: 80%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid lightskyblue;
+      outline: none;
+      transition: border 0.3s;
+    }
+    input[type="number"]:focus {
+      border: 1px solid cornflowerblue;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+    .explanation {
+      margin-top: 10px;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    .emoji {
+      font-size: 3rem;
+      margin-top: 10px;
+    }
+    .progress-container {
+      width: 100%;
+      height: 20px;
+      background: #ddd;
+      border-radius: 10px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: cornflowerblue;
+      border-radius: 10px;
+      transition: width 0.5s ease, background 0.5s ease;
+    }
+    table {
+      margin-top: 30px;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color:lightcyan;
+      color:cornflowerblue;
+    }
+    .download-btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: 300;
+      background-color:lightcyan;
+      color:cornflowerblue;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      input[type="number"] {
+        width: 100%;
+      }
+      .container {
+        padding: 20px;
+      }
+      table {
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div class="body6">
+<div class="container">
+  <h1>Air Quality AI Predictor</h1>
+  <p>Live prediction based on CO₂ and PM2.5 levels.</p>
+
+  <input type="number" id="co2" placeholder="Enter CO₂ Level (ppm)" oninput="predict()">
+  <input type="number" id="pm25" placeholder="Enter PM2.5 Level (µg/m³)" oninput="predict()"> 
+
+  <div class="result" id="predictionResult">Predicted AQI: --</div>
+  <div class="emoji" id="emoji">🙂</div>
+  <div class="explanation" id="explanationText"></div>
+
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <table id="historyTable">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>CO₂ (ppm)</th>
+        <th>PM2.5 (µg/m³)</th>
+        <th>Predicted AQI</th>
+        <th>Status</th>
+        <th>Emoji</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button class="download-btn" onclick="downloadCSV()">Download CSV</button>
+  <!-- <button class="delete-btn" onclick="deleteHistory()">Delete History</button> -->
+
+</div>
+
+<script>
+  let model;
+
+  async function createModel() {
+    model = tf.sequential();
+    model.add(tf.layers.dense({ units: 10, activation: 'relu', inputShape: [2] }));
+    model.add(tf.layers.dense({ units: 1 }));
+
+    model.compile({
+      optimizer: 'adam',
+      loss: 'meanSquaredError'
+    });
+
+    const xs = tf.tensor2d([
+      [400, 10], [500, 20], [600, 30], [700, 40],
+      [800, 50], [900, 60], [1000, 70], [1100, 80]
+    ]);
+    const ys = tf.tensor2d([
+      [50], [80], [110], [140],
+      [170], [200], [230], [260]
+    ]);
+
+    await model.fit(xs, ys, { epochs: 200 });
+    console.log('Model trained');
+  }
+
+  async function predict() {
+    if (!model) return;
+
+    const co2 = parseFloat(document.getElementById('co2').value);
+    const pm25 = parseFloat(document.getElementById('pm25').value);
+
+    if (isNaN(co2) || isNaN(pm25)) return;
+
+    const input = tf.tensor2d([[co2, pm25]]);
+    const prediction = model.predict(input);
+    const predictedAQI = Math.round((await prediction.data())[0]);
+
+    const { text, color, emoji } = getAQIExplanation(predictedAQI);
+
+    document.getElementById('predictionResult').innerText = `Predicted AQI: ${predictedAQI}`;
+    document.getElementById('explanationText').innerText = text;
+    document.getElementById('emoji').innerText = emoji;
+    document.getElementById('predictionResult').style.color = color;
+    document.getElementById('explanationText').style.color = color;
+    document.getElementById('progressBar').style.background = color;
+    document.getElementById('progressBar').style.width = Math.min(predictedAQI / 3, 100) + "%";
+
+    // Save to history table
+    addToHistory(new Date().toLocaleTimeString(), co2, pm25, predictedAQI, text, emoji);
+  }
+
+  function getAQIExplanation(aqi) {
+    if (aqi <= 50) {
+      return { text: "Good", color: "#00e400", emoji: "😃" };
+    } else if (aqi <= 100) {
+      return { text: "Moderate", color: "#ffff00", emoji: "🙂" };
+    } else if (aqi <= 150) {
+      return { text: "Unhealthy for Sensitive", color: "#ff7e00", emoji: "😐" };
+    } else if (aqi <= 200) {
+      return { text: "Unhealthy", color: "#ff0000", emoji: "😷" };
+    } else if (aqi <= 300) {
+      return { text: "Very Unhealthy", color: "#8f3f97", emoji: "🤢" };
+    } else {
+      return { text: "Hazardous", color: "#7e0023", emoji: "😡" };
+    }
+  }
+
+  function addToHistory(time, co2, pm25, aqi, status, emoji) {
+    const table = document.getElementById('historyTable').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+    newRow.innerHTML = `
+      <td>${time}</td>
+      <td>${co2}</td>
+      <td>${pm25}</td>
+      <td>${aqi}</td>
+      <td>${status}</td>
+      <td>${emoji}</td>
+    `;
+  }
+
+  function downloadCSV() {
+    let csv = "Time,CO₂ (ppm),PM2.5 (µg/m³),Predicted AQI,Status,Emoji\n";
+    const rows = document.querySelectorAll("#historyTable tbody tr");
+
+    rows.forEach(row => {
+      const cols = row.querySelectorAll("td");
+      const rowData = Array.from(cols).map(col => col.innerText).join(",");
+      csv += rowData + "\n";
+    });
+
+    const hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'air_quality_predictions.csv';
+    hiddenElement.click();
+  }
+
+  createModel();
+
+
+</script>
+</div>
+</body>
+</html>

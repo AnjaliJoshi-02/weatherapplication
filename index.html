@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Air Quality Monitoring System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1740&q=80') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Optional: floating transparent particles */
+    .bg-image {
+      position: absolute;
+      opacity: 0.07;
+      animation: float 20s infinite linear;
+      z-index: 0;
+    }
+
+    .bg-image img {
+      width: 100px;
+      height: 100px;
+    }
+
+    .bg1 { top: 10%; left: 5%; }
+    .bg2 { top: 20%; right: 10%; animation-delay: 2s; }
+    .bg3 { bottom: 15%; left: 15%; animation-delay: 4s; }
+
+    @keyframes float {
+      0% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+      100% { transform: translateY(0px) rotate(360deg); }
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(30px);
+      border-radius: 25px;
+      padding: 3rem;
+      text-align: center;
+      max-width: 700px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color:#3498db;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .thought {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+      color:aliceblue;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .next-btn {
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      background: linear-gradient(90deg, #3498db, #1abc9c);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.3s;
+    }
+
+    .next-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Optional floating transparent images -->
+  <div class="bg-image bg1"><img src="https://img.icons8.com/clouds/100/tree.png" alt="tree" /></div>
+  <div class="bg-image bg2"><img src="https://img.icons8.com/clouds/100/factory.png" alt="factory" /></div>
+  <div class="bg-image bg3"><img src="https://img.icons8.com/clouds/100/leaf.png" alt="leaf" /></div>
+
+  <!-- Main Card -->
+  <div class="card">
+    <h1>AIR QUALITY MONITORING SYSTEM</h1>
+
+    <div class="thought">
+      Clean air is a basic right, not a luxury. <br/>
+      Every breath should be safe and pure. <br/>
+      Monitoring helps us protect our skies. <br/>
+      Let's clear the air for future lives.
+    </div>
+
+    <button class="next-btn" onclick="goToNext()">CONTINUE</button>
+  </div>
+
+  <script>
+    function goToNext() {
+      window.location.href = "next.html"; // Replace with your actual next page
+    }
+  </script>
+
+</body>
+</html>

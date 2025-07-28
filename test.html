@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><title>Weather Test</title></head>
+<body>
+  <h2>Click to get weather</h2>
+  <button onclick="getWeather()">Get Weather</button>
+  <pre id="output">Waiting...</pre>
+
+  <script>
+    async function getWeather() {
+      const lat = 28.61;
+      const lon = 77.20;
+      const apiKey = "15a7431bf961a805ff0c5d445360939d"; // replace with your real one
+
+      const output = document.getElementById('output');
+      output.textContent = 'Fetching...';
+
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        output.textContent = 'Failed to fetch weather data 😓';
+      }
+    }
+  </script>
+</body>
+</html>

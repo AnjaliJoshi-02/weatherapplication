@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Air Quality System Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .body6 {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f0f2f5;
+    }
+    .h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+    .container3 {
+      max-width: 1000px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    canvas {
+      width: 100% !important;
+      height: 400px !important;
+    }
+  </style>
+</head>
+
+<body>
+<div class="body6">
+  <div class="h1">Air Quality System Dashboard</div>
+
+  <div class="container3">
+    <canvas id="combinedChart"></canvas>
+  </div>
+
+  <script>
+    const labels = [];
+    const dataSets = {
+      precip: [],
+      humidity: [],
+      co2: [],
+      airspeed: []
+    };
+
+    // Create the combined chart
+    const ctx = document.getElementById('combinedChart').getContext('2d');
+    const combinedChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Precipitation (mm)',
+            data: dataSets.precip,
+            borderColor: '#2196F3',
+            backgroundColor: '#2196F333',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+          {
+            label: 'Humidity (%)',
+            data: dataSets.humidity,
+            borderColor: '#00BCD4',
+            backgroundColor: '#00BCD433',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+          {
+            label: 'CO₂ (ppm)',
+            data: dataSets.co2,
+            borderColor: '#9C27B0',
+            backgroundColor: '#9C27B033',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+          {
+            label: 'Air Speed (km/h)',
+            data: dataSets.airspeed,
+            borderColor: '#FFC107',
+            backgroundColor: '#FFC10733',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        stacked: false,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Fetch sensor data
+    async function fetchSensorData() {
+      try {
+        const response = await fetch('https://mocki.io/v1/3633c714-fca8-41b7-86af-472888c256d3'); // 🔥 Replace this with your API URL
+        const data = await response.json();
+
+        const now = new Date();
+        const timeLabel = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+        if (labels.length >= 10) labels.shift();
+        labels.push(timeLabel);
+
+        if (dataSets.precip.length >= 10) dataSets.precip.shift();
+        dataSets.precip.push(data.precip);
+
+        if (dataSets.humidity.length >= 10) dataSets.humidity.shift();
+        dataSets.humidity.push(data.humidity);
+
+        if (dataSets.co2.length >= 10) dataSets.co2.shift();
+        dataSets.co2.push(data.co2);
+
+        if (dataSets.airspeed.length >= 10) dataSets.airspeed.shift();
+        dataSets.airspeed.push(data.airspeed);
+
+        combinedChart.update();
+
+      } catch (error) {
+        console.error('Error fetching sensor data:', error);
+      }
+    }
+
+    // Fetch data every 5 seconds
+    setInterval(fetchSensorData, 5000);
+    fetchSensorData();
+  </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modern Weather Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f4f7;
+      color: #333;
+    }
+
+    .weather-container {
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+    }
+
+    .current-weather {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .temp {
+      font-size: 48px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info {
+      text-align: right;
+    }
+
+    .info small {
+      display: block;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .forecast-chart, .forecast-daily {
+      margin-top: 30px;
+    }
+
+    .forecast-hours, .forecast-daily-items {
+      display: flex;
+      overflow-x: auto;
+      gap: 15px;
+    }
+
+    .hour-item, .day-item {
+      background: #f9f9f9;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      min-width: 80px;
+    }
+
+    .hour-item span, .day-item span {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="weather-container">
+    <div class="current-weather">
+      <div class="temp" id="currentTemp">-- °C</div>
+      <div class="info">
+        <div id="condition">Loading...</div>
+        <small id="datetime">--</small>
+        <small id="details">--</small>
+      </div>
+    </div>
+
+    <div class="forecast-chart">
+      <h3>Hourly Forecast</h3>
+      <div class="forecast-hours" id="hourlyForecast"></div>
+    </div>
+
+    <div class="forecast-daily">
+      <h3>Daily Forecast</h3>
+      <div class="forecast-daily-items" id="dailyForecast"></div>
+    </div>
+  </div>
+
+  <script>
+    const apiKey = '15a7431bf961a805ff0c5d445360939d'; // Replace with your OpenWeatherMap API key
+
+    function getWeather(lat, lon) {
+      const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&appid=${apiKey}&units=metric`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const current = data.current;
+          document.getElementById('currentTemp').innerText = `${Math.round(current.temp)} °C`;
+          document.getElementById('condition').innerText = current.weather[0].main;
+          document.getElementById('datetime').innerText = new Date(current.dt * 1000).toLocaleString();
+          document.getElementById('details').innerText = `Humidity: ${current.humidity}% | Wind: ${current.wind_speed} km/h`;
+
+          const hourly = data.hourly.slice(0, 8);
+          const hourlyHTML = hourly.map((h, i) => {
+            const time = new Date(h.dt * 1000).getHours();
+            return `<div class="hour-item"><span>${time}:00</span><span>${Math.round(h.temp)}°</span></div>`;
+          }).join('');
+          document.getElementById('hourlyForecast').innerHTML = hourlyHTML;
+
+          const daily = data.daily.slice(0, 7);
+          const dailyHTML = daily.map((d, i) => {
+            const day = new Date(d.dt * 1000).toLocaleDateString('en-US', { weekday: 'short' });
+            return `<div class="day-item"><span>${day}</span><span>${Math.round(d.temp.max)}° / ${Math.round(d.temp.min)}°</span></div>`;
+          }).join('');
+          document.getElementById('dailyForecast').innerHTML = dailyHTML;
+        });
+    }
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            getWeather(position.coords.latitude, position.coords.longitude);
+          },
+          error => {
+            alert("Unable to retrieve location. Please allow location access.");
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    getLocation();
+  </script>
+</body>
+</html>
